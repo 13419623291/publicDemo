@@ -16,9 +16,11 @@ public class Test6 {
 	 * RandomAccessFile:拼接
 	 */
        public static void main(String[] args) throws IOException, ClassNotFoundException  {
-    	Student stu=new Student("小刚","119");    	
+    	Student stu=new Student("小刚","119");
+    	Student stu1=new Student("小明","120");
 		ObjectOutputStream out=new ObjectOutputStream(new FileOutputStream("test1.txt"));
 		out.writeObject(stu);
+		out.writeObject(stu1);
 		ObjectInputStream in=new ObjectInputStream(new FileInputStream("test1.txt"));
 		Student obj=(Student)in.readObject();
 		System.out.println(obj);

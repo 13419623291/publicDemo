@@ -6,6 +6,7 @@ public class Test1 {
      /**
       * 多线程的演示及命名方式
       * @param args
+      * 
       */
 	public static void main(String[] args) {
 		// 创建对象 一个对象不能调用两次线程  所以需要创建两个对象来实现多线程
