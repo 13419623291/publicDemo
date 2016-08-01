@@ -54,7 +54,7 @@ public class Test5 {
 					test(file2[i]);
 				}else{
 					sum=sum+file2[i].length();
-					System.out.println(file2[i]+"最后的修改时间"+sdf.format(file2[i].length())+"文件大小："+file2[i].length()/1024/1024+"M");
+					System.out.println(file2[i]+"最后的修改时间"+sdf.format(file2[i].lastModified() )+"文件大小："+file2[i].length()/1024/1024+"M");
 				}
 			}   		 
     	  }

@@ -1,0 +1,482 @@
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>e站到家登陆</title>
+<link rel='stylesheet' type='text/css'href='/eservice/eservice//login/css/style2.css' />
+<script type="text/javascript" src="/eservice/eservice//js/jquery-1.7.1.min.js"></script>
+<script language=javascript>
+	//var ref = document.referrer;
+	var ref = getCookie("tkreferrer");
+	var exp = new Date(); 
+    exp.setTime(exp.getTime() - 1);
+	document.cookie ="tkreferrer=\"\";path=/;domain=taikang.com;expires="+exp.toGMTString();
+	//alert(ref);
+	var hrefUrl = location.href;
+	var indexNum = hrefUrl.indexOf("/", hrefUrl.indexOf("/", 10)+1);
+	var servlethost = hrefUrl.substring(0, indexNum);
+	var servletUrl = servlethost + "/login/login";
+	//alert(servletUrl);
+	
+	var checknum = 0;
+	var checkFlag = false;
+	function checkInfo(wx)
+	{
+		if(checkFlag)
+		{
+			return false;
+		}
+	    document.getElementById("errorInfo").innerHTML = "";
+	    document.getElementById("iconDiv").style.display = "none";
+		if(wx=='1')
+		{
+			document.getElementById("wxflag").value="1";
+		}
+	    var user = document.getElementById("username").value;
+		var pwd = document.getElementById("password").value;
+		var mark = document.getElementById("mark").value;
+		if(user=="" || user ==null || user == "证件号/用户名/手机号/邮箱")
+		{		
+			//alert("登录号码不能为空!");
+			document.getElementById("errorInfo").innerHTML = "登录名不能为空!";
+			document.getElementById("iconDiv").style.display = "";
+			return false;
+		}
+		else if(!checkinputchar(user))
+		{
+		    //alert("登录号码有非法字符!");
+		    document.getElementById("errorInfo").innerHTML = "登录名有非法字符!";
+		    document.getElementById("iconDiv").style.display = "";
+			return false;
+		}
+		else if(pwd=="" || pwd ==null)
+		{		
+			//alert("密码不能为空!");
+			document.getElementById("errorInfo").innerHTML = "密码不能为空!";
+			document.getElementById("iconDiv").style.display = "";
+			return false;
+		}
+		else if(mark=="" || mark ==null)
+		{	
+			if(checknum >=3)
+			{
+				//alert("验证码不能为空!");
+				document.getElementById("errorInfo").innerHTML = "验证码不能为空!";
+				document.getElementById("iconDiv").style.display = "";
+				return false;
+			}	
+		}			
+		
+		var checkBoolean = document.getElementById("checkbox1").checked
+		if(checkBoolean)
+		{
+		 	setCookie();
+		}
+		else
+		{
+			document.cookie ="ecsTYPE=";
+			document.cookie ="ecsUserName=";
+		}
+		checkFlag = true;
+		document.getElementById("loginbutton").innerHTML = "正在登录...";
+		//document.form.submit();
+		user = encodeURI(encodeURI(user));
+		pwd = encodeURI(encodeURI(pwd));
+	   	$.ajax(
+		{'url':servletUrl,'type':'post','data':'syn=Y&type=0&username='+user+'&password='+pwd+'&mark='+mark,'dataType':'json','cache':false
+			,'success':function(data,statusText)
+			{
+				if(data.result == "0000")
+				{
+					var ajaxJson = getCookieAll();
+					var iframeArr = new Array();
+					iframeArr[0] = "taikangframe";
+					iframeArr[1] = "tkcnframe";
+					//alert(iframeArr.length);
+					for(var i=0; i<iframeArr.length; i++)
+					{
+						var iframe = document.getElementById(iframeArr[i]);
+						var url = iframe.src;
+	        			if(url.indexOf("message") != -1)
+	        			{
+	           				iframe.src = url.replace(/message=\w+/,"message="+ajaxJson);
+	        			}
+	        			else 
+	        			{
+	            			iframe.src = url+"/#message="+ajaxJson;
+	        			}
+					}
+					//alert("1:" + ref);
+					if(ref == null || ref == "" )//|| ref.indexOf("login.jsp") > 0 || ref.indexOf(servlethost) == 0)
+					{
+						ref = servlethost+"/login/index-m.jsp?jssid="+data.info;
+						//alert("2:" + ref);
+					}
+					//alert("2:" + ref);
+					setTimeout("location.href = unescape(ref)",1000);
+				}
+				else
+				{
+					document.getElementById("username").value = "证件号/用户名/手机号/邮箱";
+					document.getElementById("password").value = "";
+					document.getElementById("mark").value = "";			
+					checknum += 1;
+					document.getElementById("errorInfo").innerHTML = data.errordesc;
+					document.getElementById("iconDiv").style.display = "";
+					if(checknum >=3)
+					{
+						document.getElementById("markDiv").style.display = "";
+						getRandomGif();
+					}
+					document.getElementById("loginbutton").innerHTML = "登录";
+	   	   			checkFlag = false;
+				}
+	   	    }
+	   	});				
+	}
+	
+	document.onkeydown=function(event){
+			      var e = event || window.event || arguments.callee.caller.arguments[0];
+			      if(e && e.keyCode==27){ // 按 Esc 
+			          //要做的事情
+			        }
+			      if(e && e.keyCode==113){ // 按 F2 
+			           //要做的事情
+			         }            
+			       if(e && e.keyCode==13){ // enter 键
+			           //要做的事情
+			           checkInfo('0');
+			      }
+			  }; 
+	
+	function checkinputchar(user)
+	{
+	   var a=user.indexOf("'");
+	   var b=user.indexOf("=");
+	   if(a>=0 || b>=0)
+	   {
+	     return false;
+	   }else{
+	     return true;
+	   }
+	}
+	
+	function getRandomGif()
+	{	
+  		var times = Math.random()+0.01;
+  		var url = hrefUrl.substring(0, indexNum)+"/logon/image?now="+times;
+		document.getElementById("image").src = url;
+	}
+	
+	function rememberUser()
+	{  //userName1=userName;Pwd=password   
+	    //check sso
+	    //alert(document.cookie);
+	    if(document.cookie !="")
+	    {          
+		     //下面这两句就是用来记住用户名和密码了
+		     var n = getCookie('ecsTYPE');
+		     if(n != null && n != "")
+		     {
+		     	document.getElementById("checkbox1").checked = true;
+		     	document.getElementById("username").value = unescape(getCookie('ecsUserName'));
+				document.getElementById("iconRegDiv").className = "iconReg2 whiconReg";
+		     }
+	    }
+	    //document.getElementById("username").focus();
+	}
+	// 用正则表达式将前后空格,用空字符串替代(PS:因为js没有现成的trim,所以要加上这个)
+	String.prototype.trim   = function()   
+	{       
+	     return   this.replace(/(^s*)|(s*$)/g,   "");   
+	}
+	//ecsTYPE=1; ecsUserName=peilin006; ecsPassword=taikang12;
+	function getCookie(objName)//获取指定名称的cookie的值
+	{    
+		//var remembercookie = "";
+	    var arrStr = document.cookie.split("; ");
+	       for(var i = 0;i < arrStr.length;i++)
+	          {
+	              var temp = arrStr[i].split("=");
+	              //remembercookie = temp[0];
+	              if(objName == temp[0]) //此处如果没有去掉字符串空格就不行,偶在这里折腾了半死,主要是这种错误不好跟踪啊
+	              {                
+	              	return temp[1];
+	              }                            
+	          }
+	}
+	
+	function setCookie()//设置cookie
+	{
+		var username = document.getElementById ("username").value;
+		var type = document.getElementById ("loginType").value;
+		var exp=new Date();
+		var time = 30*60*24*60*1000;
+		exp.setTime(exp.getTime()+time); //这里的time就是天数
+		if(username!="")
+		{
+		 document.cookie ="ecsTYPE="+escape(type)+";expires="+exp.toGMTString();
+		 document.cookie ="ecsUserName="+escape(username)+";expires="+exp.toGMTString();
+		}
+	}
+
+	function getCookieAll()//获取所有cookie
+	{   
+		var array = new Array();
+	    var arrStr = document.cookie.split("; ");
+	    var keyStr = "|";
+        for(var i=0;i < arrStr.length;i++)
+        {
+        	var temp = arrStr[i].split("=");
+        	if(keyStr.indexOf("|"+temp[0]+"|")==-1 && (temp[0]=="tkmssid" || temp[0]=="tkmtoken" 
+        		|| temp[0]=="tkmid" || temp[0]=="tkmidtoken" || temp[0]=="tkmname" || temp[0]=="member_policy"))
+        	{
+        		keyStr += temp[0] + "|";
+				array.push("\""+temp[0]+"\":\""+temp[1]+"\"");
+        	}
+        }
+        var json = "{"+array.join(",")+"}";
+        //alert(json);
+        return json;
+	}
+		
+	function check()
+	{
+	    var checkBoolean = document.getElementById("checkbox1").checked;
+		if(!checkBoolean)
+		{
+			//var r=confirm("请不要在网吧等公共场所使用该功能!");
+			//if (r==true)
+			//{
+			    document.getElementById("checkbox1").checked = true;
+			    document.getElementById("iconRegDiv").className = "iconReg2 whiconReg";
+			    setCookie();
+			//}
+			//else
+			//{
+			//	document.cookie ="ecsTYPE=";
+			//	document.cookie ="ecsUserName=";
+			//	document.getElementById("checkbox1").checked = false;
+			//	document.getElementById("iconRegDiv").className = "iconReg whiconReg";
+			//}
+		}
+		else
+		{
+			document.cookie ="ecsTYPE=";
+			document.cookie ="ecsUserName=";
+			document.getElementById("checkbox1").checked = false;
+			document.getElementById("iconRegDiv").className = "iconReg whiconReg";
+		}
+	}
+
+</script>
+
+<style type="text/css">
+	#contentLog .lefter {display: block; border: 0; float: left;}
+	#contentLog .lefter:link {outline: none;}
+</style>
+</head>
+
+<body onload="rememberUser();" oncontextmenu="window.event.returnValue=false">
+ <div id="contain">
+   <div class="logoLog"></div>
+ 
+   
+   
+<!--内容部分-->
+<form name=form method="post" action="">   
+   <div id="contentLog" >
+	
+    		<div class="contentLogLeft"></div>
+			
+	  <div class="contentLogRight" >
+	     <div class="contentlogin">
+		     <div class="login_t">登录</div>
+			 
+			 <div class="noneRegnw clearLog"></div>
+			 
+			 
+			 <!--登录名部分--> 
+			 <div class="telStyLog">
+				<div class="titleLog">登录名</div>
+		
+				<div class="inputdiv2">
+					<input name="username" id="username" type="text" class="inputSty3" value="证件号/用户名/手机号/邮箱" onfocus="if (value =='证件号/用户名/手机号/邮箱'){value =''}" onblur="if (value ==''){value='证件号/用户名/手机号/邮箱'}" />
+				</div>
+		
+             </div>
+			 
+			 <div class="noneReg3 clearLog"></div>
+			 
+			 
+			 <!--密码部分--> 
+			 <div class="telStyLog clearLog">
+				<div class="titleLog">密&nbsp;&nbsp;&nbsp;码</div>
+		
+				<div class="inputdiv2">
+					<input name="password" id="password" type="password" class="inputSty3" />
+				</div>
+		
+             </div>
+			 
+			 <div class="noneReg3 clearLog"></div>
+			 
+			 	 
+			 <!--验证码部分-->  
+			 <div class="yzmSty clearLog" id="markDiv" style="display:none">
+				<div class="titleLog">验证码</div>
+		
+				<div class="inputdiv2" style="margin-right:10px;">
+					<input name="mark" id="mark" type="text" class="inputSty4" />
+				</div>
+				
+				<div style="width:90px; height:37px; margin-right:20px;">
+					<img id="image" src="" alt="看不清，换一张" style="cursor:hand" onclick="getRandomGif()" />
+				</div>
+				
+				<div class="yzmFont">看不清<br/>
+                     <a class="redReg" href="javascript:void(0)" onclick="getRandomGif()" >换一张</a>
+				</div>
+		
+             </div>
+			 
+			 <div class="noneReg3 clearLog"></div>
+			 
+			 <!--记住账户名部分-->  
+			 <div class="jzzhLog">
+				 <div class="agreeLog" onclick="check()">
+					  <input type='radio' name="" class='uhide' />
+					  <input type="checkbox" name="checkbox" id="checkbox1" class='uhide' />
+				      <div class="iconReg whiconReg" id="iconRegDiv"></div>
+					  记住账户名
+				 </div>
+				 <div class="blueLog"><a href="../register/findpwd.jsp" target="_blank">找回密码</a> | <a href="../login/register_setp1.jsp" target="_blank">免费注册</a></div>
+			 
+			 </div>
+			 
+			 <div class="noneRegnw2"></div>
+	  
+	  		<!--登录按钮部分-->
+			 <div class="btnLog" onclick="return checkInfo('0');" id="loginbutton">登录</div>
+			 
+			 <div class="wrongSty2"><div style="width:18px; float:left; display:none" id="iconDiv"></div><span id="errorInfo"></span></div>
+
+
+			 <!--合作网站账户登录部分-->
+			 <div class="hezuoLog " style="display:none">
+			   <span>使用合作网站账号登录：</span><br/>
+			   
+			   <div class="hezuoLogcon">
+			    	<a href="javascript:void(0)" onclick="window.location='../login/cooploginbegin.jsp?channel=alipay'+window.location.search;return false;"><img src="/eservice/eservice//login/images/quicklog_03.jpg" width="64" height="16" /></a>
+			    	<a href="javascript:void(0)" onclick="window.location='../login/cooploginbegin.jsp?channel=qq'+window.location.search;return false;"><img src="/eservice/eservice//login/images/quicklog_04.jpg" width="60" height="16" /></a>
+			    	<a href="javascript:void(0)" onclick="window.location='../login/cooploginbegin.jsp?channel=sina'+window.location.search;return false;"><img src="/eservice/eservice//login/images/quicklog_05.jpg" width="83" height="16" /></a>
+			    	<a href="javascript:void(0)" onclick="window.location='../login/cooploginbegin.jsp?channel=codoon'+window.location.search;return false;"><img src="/eservice/eservice//login/images/quicklog_06.png" width="79" height="16"/></a>
+			   
+			   </div>
+			 </div>
+		 
+		 
+		 </div>
+	  
+	  
+	  </div>
+  </div>
+  <input type="hidden" id="loginType" name="type" value="0"/>
+  <input type="hidden" name="wxflag"   id="wxflag" value="0"/>
+</form>  
+  
+  
+  
+  
+  
+  <!--手机登录内容部分--> 
+  
+  <div id="infoReg">
+      
+      
+	  <div class="fl img_ewm mar-1"><img src="/eservice/eservice//login/css/images/img_ewm.jpg" width="70" height:"70" /></div>
+	  
+	  <div class="fl "><p class="font-sjdl">手机登录 www.taikang.com ，随时随地购买保障<br/>
+泰康在线官方APP全新升级，<span class="font-app" >扫扫更优惠!</span></p>
+
+      </div>
+  
+  </div>
+  
+  
+  
+
+
+
+</div>
+
+<iframe src="http://www.taikang.com/login/addtaikangcom.html#message=ecs" id="taikangframe" style="display:none" ></iframe>
+<iframe src="http://tk.cn/login/addtkcn.html#message=ecs" id="tkcnframe" style="display:none" ></iframe>
+
+<script language="javascript">  
+function killerrors() {  
+return true;  
+}  
+window.onerror = killerrors;  
+</script>
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?b7f4a12c6b299f2870e826ec7b955f9a";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+<script type="text/javascript">
+function getCookieNew(c_name)
+{
+	if(document.cookie.length>0)
+ 	{
+ 		var c_start=document.cookie.indexOf(c_name + "=");
+ 		if(c_start!=-1)
+   		{ 
+   			c_start=c_start + c_name.length+1; 
+   			var c_end=document.cookie.indexOf(";",c_start);
+   			if(c_end==-1) c_end=document.cookie.length;
+   			return unescape(document.cookie.substring(c_start,c_end));
+   		} 
+ 	}
+	return "";
+}
+var UID = getCookieNew('tkmid');
+var UserType = getCookieNew('member_policy');
+//alert('tkmid='+UID+' UserType='+UserType);
+var _smq = _smq || [];
+_smq.push(['_setAccount', '59e39c0', new Date()]);
+_smq.push(['_setDomainName', 'taikang.com']);
+_smq.push(['_setCustomVar', 1, UID, 1]);
+_smq.push(['_setCustomVar', 2, UserType, 1]);
+_smq.push(['pageview']);
+
+(function() {
+var sm = document.createElement('script'); sm.type = 'text/javascript'; sm.async = true;
+sm.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'cdnmaster.com/sitemaster/collect.js';
+var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(sm, s);
+})();
+</script>
+<script type='text/javascript'>	
+var _fxcmd = _fxcmd || [];	
+_fxcmd.sid = '6ca030d463eb8bef91593e197ecdf1cb';	
+(function () {	
+var _pzfx = document['createElement']('script');	
+_pzfx.type = 'text/javascript';	
+_pzfx.async = true;
+_pzfx.src = '//static.w3t.cn/fx/1/1/fx.js';	
+var sc = document.getElementsByTagName('script')[0];	
+sc.parentNode.insertBefore(_pzfx, sc);
+})();
+</script>
+</body>
+</html>
